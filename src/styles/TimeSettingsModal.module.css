@@ -1,0 +1,161 @@
+.timeSettingsModal :global(.modal-content) {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.timeSettingsModal :global(.modal-header) {
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.timeSettingsModal :global(.modal-body) {
+  padding: 1.5rem;
+}
+
+.timeSettingsModal :global(.modal-footer) {
+  padding: 0.5rem 1.5rem 1.5rem;
+}
+
+.timeSettingsModal :global(.btn) {
+  padding: 0.5rem 2rem;
+  font-weight: 500;
+}
+
+.timeSettingsModal :global(.close) {
+  font-size: 1.5rem;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.timeSettingsModal :global(.close:hover) {
+  opacity: 0.75;
+}
+
+.modalHeader {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formLabel {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.formControl {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: #FFFFFF;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #009688;
+  box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
+}
+
+.inputGroup {
+  display: flex;
+  align-items: stretch;
+}
+
+.inputGroup .formControl {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  flex: 1;
+}
+
+.inputGroupText {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+  white-space: nowrap;
+  background-color: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.helpText {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.25rem;
+}
+
+.modalIcon {
+  font-size: 2.5rem;
+  color: #009688;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.buttonSecondary {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+}
+
+.buttonSecondary:hover {
+  background-color: #F3F4F6;
+}
+
+.buttonPrimary {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #009688;
+  border: 1px solid #009688;
+  color: #FFFFFF;
+}
+
+.buttonPrimary:hover {
+  background-color: #00796b;
+}
+
+.buttonPrimary:disabled,
+.buttonSecondary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+} 

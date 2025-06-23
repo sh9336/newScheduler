@@ -1,0 +1,178 @@
+.modalBody {
+  padding: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formLabel {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.formControl {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: #FFFFFF;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formSelect {
+  composes: formControl;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.scheduleTypeGroup {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.scheduleTypeButton {
+  padding: 0.625rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: #FFFFFF;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scheduleTypeButton:hover {
+  background-color: #F3F4F6;
+}
+
+.scheduleTypeButton.active {
+  background-color: #3B82F6;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+.timeInput {
+  composes: formControl;
+  width: auto;
+  min-width: 150px;
+}
+
+.durationGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.durationInput {
+  composes: formControl;
+  width: 80px;
+  text-align: center;
+}
+
+.durationLabel {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.helpText {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.25rem;
+}
+
+.modalFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.buttonSecondary {
+  composes: button;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+}
+
+.buttonSecondary:hover {
+  background-color: #F3F4F6;
+}
+
+.buttonSecondary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  composes: button;
+  background-color: #3B82F6;
+  border: 1px solid #3B82F6;
+  color: #FFFFFF;
+}
+
+.buttonPrimary:hover {
+  background-color: #2563EB;
+}
+
+.buttonPrimary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.buttonDanger {
+  composes: button;
+  background-color: #DC2626;
+  border: 1px solid #DC2626;
+  color: #FFFFFF;
+}
+
+.buttonDanger:hover {
+  background-color: #B91C1C;
+}
+
+.buttonDanger:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.modalHeader {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+} 

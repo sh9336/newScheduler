@@ -1,0 +1,412 @@
+/* Enhanced Sleek Navbar with Minimized Sizes */
+.navbar {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.98)) !important;
+  backdrop-filter: blur(20px) saturate(120%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  padding: 0.5rem 0 !important; /* Reduced padding */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 60px; /* Set minimum height */
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+}
+
+/* Scroll Effect */
+.scrolled {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)) !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(25px) saturate(140%);
+}
+
+/* Minimized Logo Container */
+.logoContainer {
+  padding: 6px 12px; /* Significantly reduced padding */
+  border-radius: 6px;
+  background: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 42px; /* Reduced height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 8px; /* Space between logo and text */
+}
+
+.logoContainer:hover {
+  background: #f8fafc;
+  border-color: #1f2937;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Logo */
+.logo {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  position: relative;
+  height: 30px; /* Ensure consistent height */
+  width: auto; /* Maintain aspect ratio */
+}
+
+.logoContainer:hover .logo {
+  transform: scale(1.02);
+}
+
+/* Scheduler Text - Modified to match logo height */
+.schedulerText {
+  font-size: 20px; /* Reduced from 40px to better match 30px logo height */
+  font-weight: 700; /* Bold */
+  color: #527df6; /* Navy blue color */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.02em;
+  line-height: 30px; /* Match logo height exactly */
+  height: 30px; /* Ensure consistent height */
+  display: flex;
+  align-items: center; /* Center vertically */
+  margin: 0; /* Remove any default margins */
+}
+
+.logoContainer:hover .schedulerText {
+  color: #1eaf5a; /* Slightly lighter navy blue on hover */
+}
+
+/* Compact Navigation Buttons */
+.navLink {
+  position: relative;
+  padding: 6px 11px !important; /* Increased padding by 5% */
+  margin: 0 6px !important; /* Increased margin for spacing */
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151 !important;
+  font-weight: 500;
+  font-size: 13px; /* Increased font size by 5% */
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  min-height: 34px; /* Increased height by 5% */
+  box-sizing: border-box;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navLink:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navLink:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Navigation Icons and Text */
+.navIcon {
+  margin-right: 5px; /* Increased margin by 5% */
+  font-size: 13px; /* Increased size by 5% */
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.navText {
+  position: relative;
+  font-size: 12px; /* Increased text size by 5% */
+  font-weight: 500;
+}
+
+.navLink:hover .navIcon {
+  opacity: 1;
+}
+
+/* Active/Current Page Styling */
+.active {
+  background: #1f2937 !important;
+  color: #ffffff !important;
+  border-color: #1f2937 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.active:hover {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-color: #111827 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.active .navIcon {
+  opacity: 1;
+}
+
+/* Minimized Navbar Toggler */
+.navbarToggler {
+  border: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 6px 8px !important; /* Reduced padding */
+  height: 36px; /* Reduced height */
+  width: 40px; /* Reduced width */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navbarToggler:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.navbarToggler:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 1px 3px rgba(0, 0, 0, 0.05);
+  outline: none !important;
+}
+
+/* Enhanced focus states */
+.navLink:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Compact view for medium screens */
+@media (max-width: 1400px) {
+  .navText {
+    font-size: 10px; /* Even smaller text on medium screens */
+  }
+  
+  .navIcon {
+    font-size: 11px;
+    margin-right: 3px;
+  }
+  
+  .navLink {
+    padding: 5px 9px !important; /* Increased by 5% */
+    margin: 0 3px !important; /* Increased spacing */
+    min-height: 30px; /* Increased by 5% */
+  }
+  
+  .logoContainer {
+    height: 38px;
+    padding: 5px 10px;
+    gap: 6px; /* Reduced gap for smaller screens */
+  }
+  
+  .schedulerText {
+    font-size: 18px; /* Scale proportionally with container */
+    line-height: 26px; /* Adjust line height */
+    height: 26px; /* Adjust height */
+  }
+}
+
+/* Icon-only view for smaller screens */
+@media (max-width: 1200px) {
+  .navText {
+    display: none;
+  }
+  
+  .navIcon {
+    margin-right: 0;
+    font-size: 14px;
+  }
+  
+  .navLink {
+    min-width: 34px; /* Increased by 5% */
+    padding: 6px 9px !important; /* Increased by 5% */
+  }
+}
+
+/* Ultra-compact for very small screens */
+@media (max-width: 992px) {
+  .navbar {
+    padding: 0.25rem 0 !important;
+    min-height: 50px;
+  }
+  
+  .logoContainer {
+    height: 34px;
+    padding: 4px 8px;
+    gap: 4px; /* Even smaller gap */
+  }
+  
+  .schedulerText {
+    font-size: 16px; /* Scale down for small screens */
+    line-height: 22px; /* Adjust line height */
+    height: 22px; /* Adjust height */
+  }
+  
+  .navLink {
+    min-height: 26px;
+    padding: 4px 6px !important;
+    font-size: 10px;
+  }
+  
+  .navIcon {
+    font-size: 12px;
+  }
+}
+
+/* Enhanced Mobile Responsive */
+@media (max-width: 991.98px) {
+  .navbar {
+    padding: 0.5rem 0 !important;
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.99), rgba(241, 245, 249, 0.99)) !important;
+    backdrop-filter: blur(25px);
+  }
+  
+  .logoContainer {
+    margin-bottom: 8px;
+    height: 40px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+  
+  .schedulerText {
+    font-size: 18px; /* Maintain readability on mobile */
+    line-height: 28px; /* Adjust line height */
+    height: 28px; /* Adjust height */
+  }
+  
+  .navText {
+    display: inline;
+    font-size: 12px;
+  }
+  
+  .navIcon {
+    margin-right: 6px;
+    font-size: 14px;
+  }
+  
+  .navLink {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    min-height: 36px;
+    min-width: auto;
+    padding: 8px 16px !important;
+    margin: 1px 0 !important;
+    border-radius: 6px;
+  }
+  
+  .navLink:hover {
+    transform: scale(1.01);
+  }
+}
+
+/* Container adjustments to ensure everything fits */
+.container-fluid {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* Flex container adjustments */
+.navbar-nav {
+  gap: 8px; /* Increased gap between nav items */
+}
+
+.navbar-nav .nav-item {
+  margin: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .navbar {
+    background: #ffffff !important;
+    border-bottom: 3px solid #000000 !important;
+  }
+  
+  .logoContainer {
+    background: #ffffff !important;
+    border: 3px solid #000000 !important;
+  }
+  
+  .navLink {
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+    background: #ffffff !important;
+  }
+  
+  .navLink:hover {
+    background: #f0f0f0 !important;
+  }
+  
+  .active {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000 !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .navbar {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98)) !important;
+    border-bottom-color: rgba(71, 85, 105, 0.3) !important;
+  }
+  
+  .logoContainer {
+    background: #1e293b !important;
+    border: 2px solid #ffffff !important;
+  }
+  
+  .logoContainer:hover {
+    background: #334155 !important;
+    border-color: #e2e8f0 !important;
+  }
+  
+  .navLink {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+    color: rgba(226, 232, 240, 0.9) !important;
+  }
+  
+  .navLink:hover {
+    background: #334155 !important;
+    border-color: #64748b !important;
+    color: rgba(226, 232, 240, 1) !important;
+  }
+  
+  .active {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-color: #ffffff !important;
+  }
+  
+  .active:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    border-color: #f8fafc !important;
+  }
+  
+  .navbarToggler {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+  }
+  
+  .navbarToggler:hover {
+    background: #334155 !important;
+    border-color: #64748b !important;
+  }
+}

@@ -1,0 +1,453 @@
+.modalContent {
+  padding: 20px;
+}
+
+.notification {
+  margin-bottom: 0.5rem;
+}
+
+.dropZone {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.dropZone:hover,
+.dragOver {
+  border-color: #007bff;
+}
+
+.dropZoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropZoneContent i {
+  font-size: 2rem;
+  color: #6c757d;
+}
+
+.fileList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.fileItem {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.fileInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fileName {
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.fileState {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.fileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressContainer {
+  height: 4px;
+  background-color: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+.retryButton {
+  align-self: flex-end;
+  padding: 4px 12px;
+  font-size: 0.875rem;
+  color: #fff;
+  background-color: #dc3545;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background-color: #c82333;
+}
+
+/* Custom scrollbar for the file list */
+.fileList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fileList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.fileList::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.fileList::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Modal specific styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 0;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.modalFooter {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.buttonPrimary {
+  background-color: #0d6efd;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.buttonPrimary:hover {
+  background-color: #0b5ed7;
+}
+
+.buttonSecondary {
+  background-color: #6c757d;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.buttonSecondary:hover {
+  background-color: #5c636a;
+}
+
+.logsContainer {
+  height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.logsList {
+  flex: 1;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.logEntry {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.logEntry:hover {
+  background-color: #f8f9fa;
+}
+
+.timestamp {
+  flex-shrink: 0;
+  color: #666;
+  font-size: 0.85rem;
+  min-width: 150px;
+}
+
+.message {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.uploadArea {
+  border: 2px dashed #0d6efd;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  margin: 1.5rem 0;
+}
+
+.uploadArea:hover {
+  background-color: #e7f1ff;
+  border-color: #0a58ca;
+}
+
+.uploadIcon {
+  font-size: 3rem;
+  color: #0d6efd;
+  margin-bottom: 1rem;
+}
+
+.uploadText {
+  color: #495057;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.uploadSubtext {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.actionButton {
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primaryButton {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+}
+
+.primaryButton:hover {
+  background-color: #0a58ca;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.secondaryButton:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.modalLarge {
+  min-width: 600px;
+  max-width: 90vw;
+}
+
+.modalHeader {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 1rem;
+}
+
+.modalFooter {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.modalControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.searchWrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.searchInput:focus {
+  border-color: #86b7fe;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.downloadWrapper {
+  margin-left: auto;
+}
+
+.logsWrapper {
+  margin-bottom: 1rem;
+}
+
+.logsTextarea {
+  font-family: monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: scroll;
+  min-height: 300px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .modalLarge {
+    min-width: unset;
+    margin: 10px;
+  }
+
+  .modalBody {
+    padding: 0.75rem;
+  }
+
+  .modalControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchWrapper {
+    width: 100%;
+  }
+
+  .buttonGroup {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .downloadWrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .downloadWrapper button {
+    width: 100%;
+  }
+
+  .buttonText {
+    display: none;
+  }
+
+  .buttonGroup button {
+    flex: 1;
+    padding: 0.375rem;
+  }
+
+  .buttonGroup button i {
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalLarge {
+    margin: 5px;
+  }
+
+  .modalBody {
+    padding: 0.5rem;
+  }
+
+  .modalHeader,
+  .modalFooter {
+    padding: 0.75rem;
+  }
+
+  .modalTitle {
+    font-size: 1.1rem;
+  }
+
+  .logsTextarea {
+    font-size: 0.8rem;
+  }
+}

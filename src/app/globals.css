@@ -16,6 +16,14 @@ body {
   overflow-x: hidden;
 }
 
+.main-content {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-height: calc(100vh - 120px); /* Adjust based on your navbar/footer */
+}
+
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -40,3 +48,4 @@ a {
     color-scheme: dark;
   }
 }
+
