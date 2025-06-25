@@ -190,6 +190,11 @@ const SchedulesSection = () => {
   };
 
   const handleToggleStatus = async (scheduleId, currentStatus) => {
+    // Extra safety: check if scheduleId is valid
+    if (!scheduleId || typeof scheduleId !== 'string' || scheduleId.trim() === '') {
+      showNotification('Invalid schedule ID for toggling status.', 'error');
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('Id', scheduleId);
@@ -200,8 +205,6 @@ const SchedulesSection = () => {
         body: formData,
         credentials: 'include', // Send cookies
       });
-
-     
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -223,7 +226,6 @@ const SchedulesSection = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       showNotification('Error updating schedule status', 'error');
-      
       // Revert the optimistic update on error
       await fetchSchedules();
     }
@@ -237,6 +239,11 @@ const SchedulesSection = () => {
     try {
       const inactiveSchedules = schedules.filter(schedule => !schedule.Active);
       for (const schedule of inactiveSchedules) {
+        // Extra safety: check if schedule and Id are valid
+        if (!schedule || !schedule.Id || typeof schedule.Id !== 'string' || schedule.Id.trim() === '') {
+          showNotification('Invalid schedule found while clearing inactive schedules. Skipping.', 'warning');
+          continue;
+        }
         const formData = new FormData();
         formData.append('Id', schedule.Id);
         await fetch(`${API_BASE_URL}/deleteSchedule`, {
@@ -291,6 +298,13 @@ const SchedulesSection = () => {
   };
 
   const handleDeleteConfirm = async () => {
+    // Extra safety: check if scheduleToDelete and its Id are valid
+    if (!scheduleToDelete || !scheduleToDelete.Id || typeof scheduleToDelete.Id !== 'string' || scheduleToDelete.Id.trim() === '') {
+      showNotification('Invalid schedule selected for deletion.', 'error');
+      setShowDeleteConfirm(false);
+      setScheduleToDelete(null);
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('Id', scheduleToDelete.Id);
@@ -411,7 +425,7 @@ const SchedulesSection = () => {
   const filteredSchedules = getFilteredSchedules();
 
   return (
-    <div className={styles['schedules-container']}>
+    <div className={styles['schedules-container']} style={{ minHeight: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column' }}>
       {/* Floating Notifications */}
       <FloatingNotification
         notifications={notifications}

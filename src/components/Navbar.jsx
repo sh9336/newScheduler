@@ -28,29 +28,29 @@ export default function Navbar() {
   };
 
   const navItems = [
-    { href: '/status', label: 'Status', icon: '📊' },
-    { href: '/schedules', label: 'Schedules', icon: '📅' },
-    { href: '/tracks', label: 'Tracks', icon: '🎵' },
-    { href: '/emergency-tracks', label: 'Emergency', icon: '🚨' },
-    { href: '/logs', label: 'Logs', icon: '📋' },
-    { href: '/time', label: 'Time', icon: '⏰' },
-    { href: '/restart', label: 'Restart', icon: '🔄' },
-    { href: '/contact', label: 'Contact', icon: '📞' }
+    { href: '/status.html', label: 'Status', icon: '📊' },
+    { href: '/schedules.html', label: 'Schedules', icon: '📅' },
+    { href: '/tracks.html', label: 'Tracks', icon: '🎵' },
+    { href: '/emergency-tracks.html', label: 'Emergency', icon: '🚨' },
+    { href: '/logs.html', label: 'Logs', icon: '📋' },
+    { href: '/time.html', label: 'Time', icon: '⏰' },
+    { href: '/restart.html', label: 'Restart', icon: '🔄' },
+    { href: '/contact.html', label: 'Contact', icon: '📞' }
   ];
 
   return (
     <nav className={`navbar navbar-expand-lg ${styles.navbar} ${isScrolled ? styles.scrolled : ''}`}>
       <div className="container-fluid">
         {/* Logo on the left */}
-        <Link href="/" className="navbar-brand">
+        <Link href="/status.html" className="navbar-brand">
           <div className={styles.logoContainer}>
             <img
-  src="/grove_logo_black.png"
-  alt="Grove Scheduler Logo"
-  width={100}
-  height={30}
-  style={{ objectFit: 'contain' }}
-/>
+            src="/static/images/grove_logo_black.png"
+            alt="Grove Scheduler Logo"
+            width={100}
+            height={30}
+            style={{ objectFit: 'contain' }}
+          />
         <span style={{ fontFamily: 'Dancing Script, "Brush Script MT", "Comic Sans MS", cursive', fontWeight: 700, fontSize: 32, color: '#278', letterSpacing: 1, whiteSpace: 'nowrap', textShadow: '0 1px 2px rgba(0,0,0,0.07)' }}>
           Scheduler
         </span>

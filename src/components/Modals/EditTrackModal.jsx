@@ -68,7 +68,63 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
     }
   }, [show, assetId]);
 
+  const isValidFileName = (fileName) => {
+    if (!fileName || typeof fileName !== 'string') return { isValid: false, reason: 'File name is required.' };
+    if (fileName.includes(' ')) {
+      return {
+        isValid: false,
+        reason: 'File name contains spaces. Use underscores (_) or dashes (-) instead.'
+      };
+    }
+    const specialCharsRegex = /[!@#$%^&*()+={}[\]|\\/:;"'<>,.?]/;
+    if (specialCharsRegex.test(fileName.split('.')[0])) {
+      return {
+        isValid: false,
+        reason: 'File name contains special characters. Only underscores (_) and dashes (-) are allowed.'
+      };
+    }
+    const ALLOWED_EXTENSIONS = ['.mp3', '.mp4'];
+    const extension = '.' + fileName.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
+      return {
+        isValid: false,
+        reason: `Invalid file extension. Only ${ALLOWED_EXTENSIONS.join(', ')} files are allowed.`
+      };
+    }
+    return { isValid: true };
+  };
+
   const handleSubmit = async () => {
+    // Validation before API call
+    if (!formData.Id || typeof formData.Id !== 'string' || formData.Id.trim() === '') {
+      Notification({ message: 'Invalid track ID.', type: 'danger' });
+      return;
+    }
+    if (!formData.Name || typeof formData.Name !== 'string' || formData.Name.trim() === '') {
+      Notification({ message: 'Track name is required.', type: 'danger' });
+      return;
+    }
+    if (!formData.AssetAction || typeof formData.AssetAction !== 'string' || formData.AssetAction.trim() === '') {
+      Notification({ message: 'Asset action is required.', type: 'danger' });
+      return;
+    }
+    if (!formData.NewFileName || typeof formData.NewFileName !== 'string' || formData.NewFileName.trim() === '') {
+      Notification({ message: 'New file name is required.', type: 'danger' });
+      return;
+    }
+    const nameValidation = isValidFileName(formData.NewFileName);
+    if (!nameValidation.isValid) {
+      Notification({ message: `Invalid file name: ${nameValidation.reason}`, type: 'danger' });
+      return;
+    }
+    if (formData.DurationInSec && isNaN(Number(formData.DurationInSec))) {
+      Notification({ message: 'Duration must be a number.', type: 'danger' });
+      return;
+    }
+    if (formData.DurationInSec && Number(formData.DurationInSec) < 0) {
+      Notification({ message: 'Duration must be a positive number.', type: 'danger' });
+      return;
+    }
     try {
       setLoading(true);
       

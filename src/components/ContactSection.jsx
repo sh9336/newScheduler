@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import styles from '../styles/ContactSection.module.css';
 import Notification from './Notification';
+import emailjs from 'emailjs-com';
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -14,10 +15,27 @@ export default function ContactSection() {
     message: ''
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // For now, just show a success notification
-    Notification({ message: 'Message sent successfully! (Demo)', type: 'success' });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const time = new Date().toLocaleString(); // Add this line
+
+  try {
+    await emailjs.send(
+      'service_sgw4nuw',
+      'template_5dicml9',
+      {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message,
+        time: time, // Include time
+      },
+      'iUBjGpPcpudCbFPCD'
+    );
+
+    Notification({ message: 'Message sent successfully!', type: 'success' });
     setFormData({
       name: '',
       email: '',
@@ -25,7 +43,13 @@ export default function ContactSection() {
       subject: '',
       message: ''
     });
-  };
+
+  } catch (error) {
+    Notification({ message: 'Failed to send message. Please try again.', type: 'error' });
+    console.error(error);
+  }
+};
+
 
   const handleChange = (e) => {
     setFormData({
@@ -128,7 +152,7 @@ export default function ContactSection() {
               <div className="card-body p-4">
                 <div className="d-flex align-items-center mb-3">
                   <img
-                    src="/grove_logo_black.png"
+                    src="/static/images/grove_logo_black.png"
                     alt="Grove Systems"
                     width={120}
                     height={40}

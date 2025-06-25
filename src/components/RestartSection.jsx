@@ -17,41 +17,67 @@ export default function RestartSection() {
     try {
       setLoading(true);
 
-      // Create empty form data as required by the server
-      const formData = new FormData();
-
-
-      
-      const response = await fetch(`${API_BASE_URL}/do_reset`, {
+      // Set a timeout to handle the case where server stops immediately
+      const restartPromise = fetch(`${API_BASE_URL}/do_reset`, {
         method: 'POST',
-        body: formData,
         credentials: 'include',
       });
 
+      // Race between the fetch and a timeout
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ 
+            ok: true, 
+            json: () => Promise.resolve({ 
+              success: true, 
+              message: 'Server restart initiated successfully' 
+            })
+          });
+        }, 2000); // 2 second timeout
+      });
 
-      // Try to get the response data, but don't fail if we can't
-      // (server might stop before sending response)
+      let response;
       let data;
+
       try {
-        data = await response.json();
-      } catch (error) {
-        // If we can't get the response, but the request was sent, consider it successful
-        if (error.name === 'TypeError') {
+        // Wait for either the response or timeout
+        response = await Promise.race([restartPromise, timeoutPromise]);
+        
+        // Try to get JSON response
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          // If JSON parsing fails, assume restart was successful
           data = { success: true, message: 'Server restart initiated successfully' };
+        }
+      } catch (fetchError) {
+        // Network errors (connection refused, etc.) indicate server is restarting
+        if (fetchError.name === 'TypeError' || 
+            fetchError.message.includes('Failed to fetch') ||
+            fetchError.message.includes('NetworkError') ||
+            fetchError.message.includes('fetch')) {
+          data = { success: true, message: 'Server restart initiated successfully' };
+          response = { ok: true };
         } else {
-          throw error;
+          throw fetchError;
         }
       }
 
-      if (!response.ok && response.status !== 502 && response.status !== 504) {
+      // Handle specific HTTP status codes that might indicate restart
+      if (response && !response.ok && 
+          response.status !== 502 && 
+          response.status !== 504 && 
+          response.status !== 0) { // status 0 can occur when connection is cut
+        
         if (response.status === 401) {
           // Redirect to login if unauthorized
-          window.location.href = '/login';
+          window.location.href = '/static/login.html';
           return;
         }
-        throw new Error(data.error || data.details || 'Failed to restart server');
+        throw new Error(data?.error || data?.details || 'Failed to restart server');
       }
 
+      // Show success notification
       Notification({ 
         message: data.message || 'Server restart initiated successfully', 
         type: 'success' 
@@ -60,18 +86,34 @@ export default function RestartSection() {
       // Close modal after successful restart
       setShowConfirmModal(false);
 
-      // Optional: Redirect to status page after restart
-      // Wait a bit longer since the server needs time to stop and restart
+      // Redirect to status page after restart
       setTimeout(() => {
-        window.location.href = '/status';
+        window.location.href = '/static/status.html';
       }, 3000); // 3 seconds delay
 
     } catch (error) {
       console.error('Error restarting server:', error);
-      Notification({ 
-        message: error.message || 'Error restarting server', 
-        type: 'danger' 
-      });
+      
+      // Only show error if it's not a network/connection error
+      // (which would indicate successful restart)
+      if (!error.message.includes('Failed to fetch') && 
+          !error.message.includes('NetworkError') &&
+          error.name !== 'TypeError') {
+        Notification({ 
+          message: error.message || 'Error restarting server', 
+          type: 'danger' 
+        });
+      } else {
+        // Connection errors likely mean restart was successful
+        Notification({ 
+          message: 'Server restart initiated successfully', 
+          type: 'success' 
+        });
+        setShowConfirmModal(false);
+        setTimeout(() => {
+          window.location.href = '/static/status.html';
+        }, 3000);
+      }
     } finally {
       setLoading(false);
     }

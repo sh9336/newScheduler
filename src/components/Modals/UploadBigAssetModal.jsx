@@ -11,7 +11,7 @@ const RETRY_DELAY = 2000; // 2 seconds
 const CONNECTION_TIMEOUT = 10000; // 10 seconds
 
 // Use environment variable or fallback to API route
-const BACKEND_WS_URL =  '';
+const BACKEND_WS_URL =  '/newAssetChunkUpload';
 
 const TransferStates = {
   INITED: 'INITED',
@@ -20,6 +20,34 @@ const TransferStates = {
   FINISHED: 'FINISHED',
   ERROR: 'ERROR',
   CLOSED: 'CLOSED',
+};
+
+// File name/type validation helpers
+const ALLOWED_TYPES = ['audio/mpeg', 'video/mp4'];
+const ALLOWED_EXTENSIONS = ['.mp3', '.mp4'];
+
+const isValidFileName = (fileName) => {
+  if (fileName.includes(' ')) {
+    return {
+      isValid: false,
+      reason: 'File name contains spaces. Use underscores (_) or dashes (-) instead.'
+    };
+  }
+  const specialCharsRegex = /[!@#$%^&*()+={}[\]|\\/:;"'<>,.?]/;
+  if (specialCharsRegex.test(fileName.split('.')[0])) {
+    return {
+      isValid: false,
+      reason: 'File name contains special characters. Only underscores (_) and dashes (-) are allowed.'
+    };
+  }
+  const extension = '.' + fileName.split('.').pop().toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(extension)) {
+    return {
+      isValid: false,
+      reason: `Invalid file extension. Only ${ALLOWED_EXTENSIONS.join(', ')} files are allowed.`
+    };
+  }
+  return { isValid: true };
 };
 
 const getSchedulerCookie = () => {
@@ -65,69 +93,89 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
         const fileInfo = `FILEINFO:${file.name}:${file.size}:${file.type}`;
         console.log('Sending:', fileInfo);
         ws.send(fileInfo);
-        updateFileState(file.name, TransferStates.ONGOING, 0);
+        // Ensure bytesTransferred is initialized to 0 on START
+        setFileStates((prev) => ({
+          ...prev,
+          [file.name]: {
+            ...prev[file.name],
+            state: TransferStates.ONGOING,
+            progress: 0,
+            bytesTransferred: 0,
+          },
+        }));
+        // Do NOT send any chunk here. Wait for NEXT: from server.
       } else if (message.startsWith('NEXT:')) {
-        const state = fileStates[file.name];
-        if (!state || state.state !== TransferStates.ONGOING) return;
+        setFileStates((prev) => {
+          const state = prev[file.name];
+          if (!state || state.state !== TransferStates.ONGOING) return prev;
+          const start = state.bytesTransferred || 0;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
 
-        const start = state.bytesTransferred || 0;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end);
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          try {
-            ws.send(e.target.result);
-
-            const newBytesTransferred = end;
-            const progress = Math.round((newBytesTransferred / file.size) * 100);
-
-            setFileStates((prev) => ({
-              ...prev,
-              [file.name]: {
-                ...prev[file.name],
-                state: TransferStates.ONGOING,
-                progress,
-                bytesTransferred: newBytesTransferred,
-              },
-            }));
-
-            if (end === file.size) {
-              console.log('Sending DONE signal for', file.name);
-              ws.send('DONE:');
-            }
-          } catch (error) {
-            console.error('Error sending chunk:', error);
-            updateFileState(file.name, TransferStates.ERROR, null, 'Failed to send chunk');
-            ws.close();
-            Notification({
-              message: `Error uploading ${file.name}: Failed to send chunk`,
-              type: 'error',
-            });
+          // Only send chunk if there is data left
+          if (start < file.size) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              try {
+                ws.send(e.target.result);
+                const newBytesTransferred = end;
+                const progress = Math.round((newBytesTransferred / file.size) * 100);
+                setFileStates((prev2) => ({
+                  ...prev2,
+                  [file.name]: {
+                    ...prev2[file.name],
+                    state: TransferStates.ONGOING,
+                    progress,
+                    bytesTransferred: newBytesTransferred,
+                  },
+                }));
+                // Only send DONE if this was the last chunk
+                if (end === file.size) {
+                  console.log('Sending DONE signal for', file.name);
+                  ws.send('DONE:');
+                }
+              } catch (error) {
+                console.error('Error sending chunk:', error);
+                updateFileState(file.name, TransferStates.ERROR, null, 'Failed to send chunk');
+                ws.close();
+                Notification({
+                  message: `Error uploading ${file.name}: Failed to send chunk`,
+                  type: 'error',
+                });
+              }
+            };
+            reader.readAsArrayBuffer(chunk);
+          } else {
+            // If somehow NEXT: is received after all data sent, do not send DONE again
+            console.warn('Received NEXT: after all data sent for', file.name);
           }
-        };
-        reader.readAsArrayBuffer(chunk);
+          return prev;
+        });
       } else if (message.startsWith('UPLOADED:')) {
-        const match = message.match(/UPLOADED: File Successfully uploaded\. Name=([^;]+) Size=(\d+)/);
-        if (match) {
-          const [, filename, size] = match;
-          console.log(`Upload complete for ${filename}, size: ${size} bytes`);
-          updateFileState(filename, TransferStates.FINISHED, 100);
+        // Accept any UPLOADED: message as success, regardless of regex match or file name
+        Object.keys(fileStates).forEach((fname) => {
+          if (fileStates[fname].state !== TransferStates.FINISHED) {
+            updateFileState(fname, TransferStates.FINISHED, 100);
+          }
+        });
+        // Prevent retry logic after a successful upload
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          ws.onclose = null; // Prevent triggering retry logic
           ws.close();
-          onUpload?.();
-          Notification({
-            message: `${filename} uploaded successfully`,
-            type: 'success',
-          });
-        } else {
-          console.error(`Malformed UPLOADED message: ${message}`);
-          updateFileState(file.name, TransferStates.ERROR, null, 'Invalid server response');
-          ws.close();
-          Notification({
-            message: `Error uploading ${file.name}: Invalid server response`,
-            type: 'error',
-          });
         }
+        onUpload?.();
+        Notification({
+          message: `File uploaded successfully`,
+          type: 'success',
+        });
+        // Automatically close the modal after a short delay
+        setTimeout(() => {
+          if (typeof onHide === 'function') onHide();
+          // Clear files and fileStates for next upload
+          setFiles([]);
+          setFileStates({});
+        }, 1200);
+        return;
       } else if (message.startsWith('ERROR:')) {
         const error = message.substring(6);
         console.error(`Server error for ${file.name}:`, error);
@@ -182,7 +230,7 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
             if (ws && ws.readyState !== WebSocket.OPEN) {
               console.error('Connection timeout. Current readyState:', ws.readyState);
               ws.close();
-              throw new Error('WebSocket connection timeout after 10 seconds');
+              // Remove retry logic: do not retry on timeout
             }
           }, CONNECTION_TIMEOUT);
 
@@ -273,16 +321,11 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
                 return;
               }
 
-              if (retryCount < MAX_RETRIES) {
-                retryCount++;
-                console.log(`Retrying connection (${retryCount}/${MAX_RETRIES})...`);
-                setTimeout(tryConnect, RETRY_DELAY);
-              } else {
-                Notification({
-                  message: `Failed to upload ${file.name} after ${MAX_RETRIES} attempts: ${errorMsg}`,
-                  type: 'error',
-                });
-              }
+              // Remove retry logic: do not retry on close
+              Notification({
+                message: `Failed to upload ${file.name}: ${errorMsg}`,
+                type: 'error',
+              });
             }
           };
 
@@ -312,16 +355,11 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
             }
           }
 
-          if (retryCount < MAX_RETRIES) {
-            retryCount++;
-            console.log(`Retrying connection (${retryCount}/${MAX_RETRIES})...`);
-            setTimeout(tryConnect, RETRY_DELAY);
-          } else {
-            Notification({
-              message: `Failed to upload ${file.name} after ${MAX_RETRIES} attempts: ${error.message}`,
-              type: 'error',
-            });
-          }
+          // Remove retry logic: do not retry on error
+          Notification({
+            message: `Failed to upload ${file.name}: ${error.message}`,
+            type: 'error',
+          });
         }
       };
 
@@ -330,11 +368,39 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
     [handleServerMessage, updateFileState],
   );
 
+  // Validation function for files before upload
+  const validateFiles = (fileList) => {
+    const validFiles = [];
+    const invalidFiles = [];
+    Array.from(fileList).forEach(file => {
+      const fileNameValidation = isValidFileName(file.name);
+      if (!fileNameValidation.isValid) {
+        invalidFiles.push({
+          name: file.name,
+          reason: fileNameValidation.reason
+        });
+      } else if (!ALLOWED_TYPES.includes(file.type)) {
+        invalidFiles.push({
+          name: file.name,
+          reason: 'Invalid file type. Only MP3 and MP4 files are allowed.'
+        });
+      } else {
+        validFiles.push(file);
+      }
+    });
+    if (invalidFiles.length > 0) {
+      const message = invalidFiles.map(file => `"${file.name}": ${file.reason}`).join('\n');
+      Notification({ message: 'Invalid Files:\n' + message, type: 'warning' });
+    }
+    return validFiles;
+  };
+
   const handleFileSelect = useCallback(
     (event) => {
       const selectedFiles = Array.from(event.target.files || []);
-      setFiles((prev) => [...prev, ...selectedFiles]);
-      selectedFiles.forEach((file) => {
+      const validFiles = validateFiles(selectedFiles);
+      setFiles((prev) => [...prev, ...validFiles]);
+      validFiles.forEach((file) => {
         if (!fileStates[file.name]) {
           startUpload(file);
         }
@@ -357,9 +423,10 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
     (e) => {
       e.preventDefault();
       setIsDragOver(false);
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      setFiles((prev) => [...prev, ...droppedFiles]);
-      droppedFiles.forEach((file) => {
+      const droppedFiles = Array.from(e.dataTransfer.files || []);
+      const validFiles = validateFiles(droppedFiles);
+      setFiles((prev) => [...prev, ...validFiles]);
+      validFiles.forEach((file) => {
         if (!fileStates[file.name]) {
           startUpload(file);
         }
@@ -458,7 +525,7 @@ const UploadBigAssetModal = ({ show, onHide, onUpload }) => {
                     </div>
                     <div className="d-flex align-items-center gap-2" style={{ width: '35%' }}>
                       <div className="flex-grow-1">
-                        <div className="progress rounded-pill" style={{ height: '6px' }}>
+                        <div className="progress rounded-pill" style={{ height: '11px' }}>
                           <div
                             className={`progress-bar ${state.state === 'ERROR' ? 'bg-danger' : state.state === 'FINISHED' ? 'bg-success' : 'bg-primary'}`}
                             role="progressbar"

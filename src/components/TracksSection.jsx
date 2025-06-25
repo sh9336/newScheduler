@@ -56,6 +56,14 @@ const [assets, setAssets] = useState([]);
   };
 
   const confirmDelete = async () => {
+    // Extra safety: validate selectedAssetId before sending request
+    if (!selectedAssetId || typeof selectedAssetId !== 'string' || selectedAssetId.trim() === '') {
+      Notification({ message: 'Invalid track selected for deletion.', type: 'danger' });
+      setShowDeleteModal(false);
+      setSelectedAssetId(null);
+      setSelectedAssetName('');
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('Id', selectedAssetId);

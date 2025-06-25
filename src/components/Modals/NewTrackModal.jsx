@@ -431,7 +431,7 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
                           variant={getProgressVariant(file.name)}
                           animated={uploadStatus[file.name] === 'uploading'}
                           striped
-                          style={{ height: '6px' }}
+                          style={{ height: '11px' }}
                           className="rounded-pill"
                         />
                       </div>

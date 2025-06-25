@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+  const isLoginPage = pathname === '/login' || pathname === '/login.html';
   return (
     <>
       {!isLoginPage && <Navbar />}

@@ -157,9 +157,15 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
   };
 
   const handleSubmit = async () => {
-    if (!formData.Name || !formData.Action || !formData.AssetId || !formData.timeOfDay) {
+    // Extra safety: check all required fields for validity
+    if (!formData.Name || typeof formData.Name !== 'string' || formData.Name.trim() === '' ||
+        !formData.Action || typeof formData.Action !== 'string' || formData.Action.trim() === '' ||
+        !formData.AssetId || typeof formData.AssetId !== 'string' || formData.AssetId.trim() === '' ||
+        !formData.timeOfDay || typeof formData.timeOfDay !== 'string' || formData.timeOfDay.trim() === '' ||
+        (editData && (!formData.Id || typeof formData.Id !== 'string' || formData.Id.trim() === ''))
+    ) {
       if (onNotification) {
-        onNotification('Please fill all required fields', 'warning');
+        onNotification('Invalid or missing required fields. Please check your input.', 'warning');
       }
       return;
     }

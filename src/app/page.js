@@ -3,11 +3,11 @@ import { useEffect } from "react";
 
 export default function Home() {
   useEffect(() => {
-    const isAuthenticated = typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') === 'true';
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
-      window.location.href = "/status";
+      window.location.href = '/static/status.html';
     } else {
-      window.location.href = "/login";
+      window.location.href = '/static/login.html';
     }
   }, []);
   return null;

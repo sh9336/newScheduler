@@ -42,7 +42,7 @@ export default function LoginSection() {
         // Set localStorage flag for client-side auth
         localStorage.setItem('isAuthenticated', 'true');
         // Simple redirect - cookies will be automatically included in future requests
-        window.location.href = '/status';
+        window.location.href = '/static/status.html'; // Redirect to status page
         
       } else {
         setError('Login Unsuccessful. Please login again.');
@@ -58,7 +58,7 @@ export default function LoginSection() {
       {/* Logo at top left with black border and Scheduler text */}
       <div style={{ position: 'absolute', top: 24, left: 24, zIndex: 10, background: '#fff', border: '2px solid #000', borderRadius: 8, padding: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: 12 }}>
         <img
-          src="/grove_logo_black.png"
+          src="/static/images/grove_logo_black.png"
           alt="Grove Scheduler Logo"
           width={100}
           height={32}
