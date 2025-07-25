@@ -410,3 +410,14 @@
     border-color: #64748b !important;
   }
 }
+
+/* Responsive min-width for nav buttons */
+.navbar-btn {
+  min-width: 80px;
+}
+
+@media (min-width: 768px) {
+  .navbar-btn {
+    min-width: 120px;
+  }
+}

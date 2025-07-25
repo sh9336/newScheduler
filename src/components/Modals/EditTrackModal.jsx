@@ -18,6 +18,7 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
     NewFileName: '',
   });
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [assetActions, setAssetActions] = useState([]);
 
   useEffect(() => {
@@ -68,8 +69,84 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
     }
   }, [show, assetId]);
 
+  const isValidFileName = (fileName) => {
+    if (!fileName || typeof fileName !== 'string') return { isValid: false, reason: 'File name is required.' };
+    if (fileName.includes(' ')) {
+      return {
+        isValid: false,
+        reason: 'File name contains spaces. Use underscores (_) or dashes (-) instead.'
+      };
+    }
+    const specialCharsRegex = /[!@#$%^&*()+={}[\]|\\/:;"'<>,.?]/;
+    if (specialCharsRegex.test(fileName.split('.')[0])) {
+      return {
+        isValid: false,
+        reason: 'File name contains special characters. Only underscores (_) and dashes (-) are allowed.'
+      };
+    }
+    const ALLOWED_EXTENSIONS = ['.mp3', '.mp4'];
+    const extension = '.' + fileName.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
+      return {
+        isValid: false,
+        reason: `Invalid file extension. Only ${ALLOWED_EXTENSIONS.join(', ')} files are allowed.`
+      };
+    }
+    return { isValid: true };
+  };
+
+  const validateFormData = (data) => {
+    // Required fields validation
+    const requiredFields = {
+      Id: 'Invalid track ID.',
+      Name: 'Track name is required.',
+      AssetAction: 'Asset action is required.',
+      NewFileName: 'New file name is required.'
+    };
+
+    for (const [field, message] of Object.entries(requiredFields)) {
+      if (!data[field] || typeof data[field] !== 'string' || data[field].trim() === '') {
+        throw new Error(message);
+      }
+    }
+
+    // File name validation
+    const nameValidation = isValidFileName(data.NewFileName);
+    if (!nameValidation.isValid) {
+      throw new Error(`Invalid file name: ${nameValidation.reason}`);
+    }
+
+    // Duration validation
+    if (data.DurationInSec) {
+      const duration = Number(data.DurationInSec);
+      if (isNaN(duration)) {
+        throw new Error('Duration must be a number.');
+      }
+      if (duration < 0) {
+        throw new Error('Duration must be a positive number.');
+      }
+      if (duration > 86400) { // 24 hours in seconds
+        throw new Error('Duration cannot exceed 24 hours.');
+      }
+    }
+
+    // Asset action validation
+    if (!assetActions.some(action => action.Name === data.AssetAction)) {
+      throw new Error('Invalid asset action selected.');
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
     try {
+      // Validate form data
+      validateFormData(formData);
+      
+      setIsSubmitting(true);
       setLoading(true);
       
       // Create FormData object
@@ -80,19 +157,11 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
       submitData.append('DurationInSec', formData.DurationInSec);
       submitData.append('NewFileName', formData.NewFileName);
 
-
       const response = await fetch(`${API_BASE_URL}/updateAsset`, {
         method: 'POST',
         body: submitData,
         credentials: 'include', // Send cookies
       });
-
-      // // Make the API call to our Next.js API route
-      // const response = await fetch('/api/assets?action=update', {
-      //   method: 'POST',
-      //   body: submitData,
-      //   credentials: 'include', // Include cookies
-      // });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -107,6 +176,7 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
       Notification({ message: `Error updating track: ${error.message}`, type: 'danger' });
     } finally {
       setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -164,11 +234,11 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide} disabled={loading}>
+        <Button variant="secondary" onClick={onHide} disabled={loading || isSubmitting}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSubmit} disabled={loading}>
-          {loading ? (
+        <Button variant="primary" onClick={handleSubmit} disabled={loading || isSubmitting}>
+          {loading || isSubmitting ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               Updating...

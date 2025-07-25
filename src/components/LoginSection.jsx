@@ -3,10 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+
 import styles from '../styles/LoginSection.module.css';
 const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? '/api/proxy' // Use proxy in development
   : ''; // Direct backend in production
+const isDev = process.env.NODE_ENV === 'development';
+
+const logoSrc = isDev 
+  ? "/images/grove_logo_black.png" 
+  : "/static/images/grove_logo_black.png";
 
 export default function LoginSection() {
   const [ipAddress, setIpAddress] = useState('');
@@ -42,7 +48,11 @@ export default function LoginSection() {
         // Set localStorage flag for client-side auth
         localStorage.setItem('isAuthenticated', 'true');
         // Simple redirect - cookies will be automatically included in future requests
-        window.location.href = '/status';
+        if (isDev===true) {
+          window.location.href = '/status';
+        } else {
+          window.location.href = '/static/status.html';
+        } 
         
       } else {
         setError('Login Unsuccessful. Please login again.');
@@ -58,7 +68,7 @@ export default function LoginSection() {
       {/* Logo at top left with black border and Scheduler text */}
       <div style={{ position: 'absolute', top: 24, left: 24, zIndex: 10, background: '#fff', border: '2px solid #000', borderRadius: 8, padding: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: 12 }}>
         <img
-          src="/grove_logo_black.png"
+          src= {logoSrc}
           alt="Grove Scheduler Logo"
           width={100}
           height={32}

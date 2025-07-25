@@ -32,8 +32,10 @@ const SchedulesSection = () => {
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showBackupModal, setShowBackupModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [showClearInactiveConfirm, setShowClearInactiveConfirm] = useState(false);
+  const [togglingSchedules, setTogglingSchedules] = useState(new Set());
 
   useEffect(() => {
     // Set the cookie from localStorage after component mounts
@@ -190,6 +192,18 @@ const SchedulesSection = () => {
   };
 
   const handleToggleStatus = async (scheduleId, currentStatus) => {
+    // Prevent multiple submissions for the same schedule
+    if (togglingSchedules.has(scheduleId)) return;
+
+    // Extra safety: check if scheduleId is valid
+    if (!scheduleId || typeof scheduleId !== 'string' || scheduleId.trim() === '') {
+      showNotification('Invalid schedule ID for toggling status.', 'error');
+      return;
+    }
+
+    // Add schedule to toggling set
+    setTogglingSchedules(prev => new Set([...prev, scheduleId]));
+
     try {
       const formData = new FormData();
       formData.append('Id', scheduleId);
@@ -200,8 +214,6 @@ const SchedulesSection = () => {
         body: formData,
         credentials: 'include', // Send cookies
       });
-
-     
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -223,9 +235,15 @@ const SchedulesSection = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       showNotification('Error updating schedule status', 'error');
-      
       // Revert the optimistic update on error
       await fetchSchedules();
+    } finally {
+      // Remove schedule from toggling set
+      setTogglingSchedules(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(scheduleId);
+        return newSet;
+      });
     }
   };
 
@@ -237,6 +255,11 @@ const SchedulesSection = () => {
     try {
       const inactiveSchedules = schedules.filter(schedule => !schedule.Active);
       for (const schedule of inactiveSchedules) {
+        // Extra safety: check if schedule and Id are valid
+        if (!schedule || !schedule.Id || typeof schedule.Id !== 'string' || schedule.Id.trim() === '') {
+          showNotification('Invalid schedule found while clearing inactive schedules. Skipping.', 'warning');
+          continue;
+        }
         const formData = new FormData();
         formData.append('Id', schedule.Id);
         await fetch(`${API_BASE_URL}/deleteSchedule`, {
@@ -291,6 +314,18 @@ const SchedulesSection = () => {
   };
 
   const handleDeleteConfirm = async () => {
+    // Prevent multiple submissions
+    if (isDeleting) return;
+
+    // Extra safety: check if scheduleToDelete and its Id are valid
+    if (!scheduleToDelete || !scheduleToDelete.Id || typeof scheduleToDelete.Id !== 'string' || scheduleToDelete.Id.trim() === '') {
+      showNotification('Invalid schedule selected for deletion.', 'error');
+      setShowDeleteConfirm(false);
+      setScheduleToDelete(null);
+      return;
+    }
+    
+    setIsDeleting(true);
     try {
       const formData = new FormData();
       formData.append('Id', scheduleToDelete.Id);
@@ -312,6 +347,8 @@ const SchedulesSection = () => {
     } catch (error) {
       console.error('Error deleting schedule:', error);
       showNotification('Error deleting schedule', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -411,7 +448,8 @@ const SchedulesSection = () => {
   const filteredSchedules = getFilteredSchedules();
 
   return (
-    <div className={styles['schedules-container']}>
+    <div className="schedules-container d-flex flex-column" style={{ minHeight: 'calc(100vh - 60px)', padding: '24px', margin: '24px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+    
       {/* Floating Notifications */}
       <FloatingNotification
         notifications={notifications}
@@ -539,12 +577,15 @@ const SchedulesSection = () => {
                               id={`statusCheckbox${schedule.Id}`}
                               checked={schedule.Active}
                               onChange={() => handleToggleStatus(schedule.Id, schedule.Active)}
-                            className={styles['status-checkbox-input']}
+                              disabled={togglingSchedules.has(schedule.Id)}
+                              className={styles['status-checkbox-input']}
                             />
                           <label htmlFor={`statusCheckbox${schedule.Id}`} className={styles['status-checkbox-label']}>
                             <span className={styles['checkbox-custom']}></span>
                             <span className={`${styles['status-text']} ${schedule.Active ? styles.active : styles.inactive}`}>
-                                {schedule.Active ? 'Active' : 'Inactive'}
+                                {togglingSchedules.has(schedule.Id) 
+                                  ? 'Updating...' 
+                                  : (schedule.Active ? 'Active' : 'Inactive')}
                               </span>
                             </label>
                           </div>
@@ -617,7 +658,7 @@ const SchedulesSection = () => {
                             <button 
                               type="button"
                               className="btn btn-outline-primary btn-sm"
-                            onClick={() => handleEditClick(schedule)}
+                              onClick={() => handleEditClick(schedule)}
                               title="Edit Schedule"
                             >
                               <i className="fas fa-edit"></i>
@@ -625,8 +666,9 @@ const SchedulesSection = () => {
                             <button 
                               type="button"
                               className="btn btn-outline-danger btn-sm"
-                            onClick={() => handleDeleteClick(schedule)}
+                              onClick={() => handleDeleteClick(schedule)}
                               title="Delete Schedule"
+                              disabled={isDeleting}
                             >
                               <i className="fas fa-trash"></i>
                             </button>
@@ -699,11 +741,11 @@ const SchedulesSection = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={handleDeleteConfirm}>
-            Delete
+          <Button variant="danger" onClick={handleDeleteConfirm} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </Modal.Footer>
       </Modal>

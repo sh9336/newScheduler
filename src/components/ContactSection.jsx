@@ -4,6 +4,13 @@ import { useState } from 'react';
 import Image from 'next/image';
 import styles from '../styles/ContactSection.module.css';
 import Notification from './Notification';
+import emailjs from 'emailjs-com';
+
+const isDev = process.env.NODE_ENV === 'development';
+
+const logoSrc = isDev 
+  ? "/images/grove_logo_black.png" 
+  : "/static/images/grove_logo_black.png";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -14,10 +21,27 @@ export default function ContactSection() {
     message: ''
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // For now, just show a success notification
-    Notification({ message: 'Message sent successfully! (Demo)', type: 'success' });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const time = new Date().toLocaleString(); // Add this line
+
+  try {
+    await emailjs.send(
+      'service_sgw4nuw',
+      'template_5dicml9',
+      {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message,
+        time: time, // Include time
+      },
+      'iUBjGpPcpudCbFPCD'
+    );
+
+    Notification({ message: 'Message sent successfully!', type: 'success' });
     setFormData({
       name: '',
       email: '',
@@ -25,7 +49,13 @@ export default function ContactSection() {
       subject: '',
       message: ''
     });
-  };
+
+  } catch (error) {
+    Notification({ message: 'Failed to send message. Please try again.', type: 'error' });
+    console.error(error);
+  }
+};
+
 
   const handleChange = (e) => {
     setFormData({
@@ -43,7 +73,7 @@ export default function ContactSection() {
             <div className="card shadow-sm h-100 border-0">
               <div className="card-body p-4">
                 <h2 className="fw-bold mb-1 d-flex align-items-center">
-                  <i className="fas fa-envelope text-primary me-2"></i> Get in Touch
+                  <i className="fas fa-envelope me-2" style={{ color: '#f39c12', background: '#fff6e3', borderRadius: '50%', padding: '6px' }}></i> Get in Touch
                 </h2>
                 <p className="text-muted mb-4">We'd love to hear from you. Please fill out this form.</p>
                 <form onSubmit={handleSubmit}>
@@ -114,8 +144,8 @@ export default function ContactSection() {
                     />
                   </div>
                   <div className="d-grid mt-4">
-                    <button type="submit" className="btn btn-primary btn-lg rounded-2 fw-semibold">
-                      <i className="fas fa-paper-plane me-2"></i> Send Message
+                    <button type="submit" className="btn btn-lg rounded-2 fw-semibold" style={{ background: 'linear-gradient(90deg, #f39c12 0%, #27ae60 100%)', color: '#fff', border: 'none' }}>
+                      <i className="fas fa-paper-plane me-2" style={{ color: '#fff', background: 'linear-gradient(90deg, #27ae60 0%, #f39c12 100%)', borderRadius: '50%', padding: '6px' }}></i> Send Message
                     </button>
                   </div>
                 </form>
@@ -128,54 +158,54 @@ export default function ContactSection() {
               <div className="card-body p-4">
                 <div className="d-flex align-items-center mb-3">
                   <img
-                    src="/grove_logo_black.png"
+                    src={logoSrc}
                     alt="Grove Systems"
                     width={120}
                     height={40}
                     className="me-3"
-                    style={{ objectFit: 'contain' }}
+                    style={{ objectFit: 'contain', border: '2px solid #222', borderRadius: '12px', background: '#fff', boxShadow: '0 2px 8px 0 #27ae60, 0 1px 8px 0 #f39c12' }}
                   />
                   <h3 className="fw-bold mb-0">Grove Systems Pvt. Ltd.</h3>
                 </div>
                 <div className="mb-3">
-                  <i className="fas fa-map-marker-alt text-primary me-2"></i>
+                  <i className="fas fa-map-marker-alt" style={{ color: '#e74c3c', background: '#fdecea', borderRadius: '50%', padding: '6px' }}></i>
                   <span className="fw-semibold">Address:</span>
                   <div className="text-muted small ms-4">
                     F-85, F-Block, Okhla Phase III<br />Okhla Industrial Estate, New Delhi,Delhi,110020<br />India
                   </div>
                 </div>
                 <div className="mb-3">
-                  <i className="fas fa-phone-alt text-primary me-2"></i>
+                  <i className="fas fa-phone-alt" style={{ color: '#27ae60', background: '#eafaf1', borderRadius: '50%', padding: '6px' }}></i>
                   <span className="fw-semibold">Phone:</span>
                   <div className="text-muted small ms-4">
                     +91 98XXXXXXXX<br />+91 92XXXXXXXX
                   </div>
                 </div>
                 <div className="mb-3">
-                  <i className="fas fa-envelope text-primary me-2"></i>
+                  <i className="fas fa-envelope" style={{ color: '#f39c12', background: '#fff6e3', borderRadius: '50%', padding: '6px' }}></i>
                   <span className="fw-semibold">Email:</span>
                   <div className="text-muted small ms-4">
-                    info@grovesystems.com<br />support@grovesystems.com
+                    info@grovesystems.co<br />support@grovesystems.co
                   </div>
                 </div>
                 <div className="mb-3">
-                  <i className="fas fa-globe text-primary me-2"></i>
+                  <i className="fas fa-globe" style={{ color: '#2980b9', background: '#eaf4fb', borderRadius: '50%', padding: '6px' }}></i>
                   <span className="fw-semibold">Website:</span>
                   <a href="https://grovesystems.co/" target="_blank" rel="noopener noreferrer" className="ms-2 text-decoration-underline">
                     www.grovesystems.co
                   </a>
                 </div>
                 <div className="d-flex gap-3 mt-4">
-                  <a href="https://facebook.com/grovesystems" target="_blank" rel="noopener noreferrer" className="text-primary fs-5">
+                  <a href="https://facebook.com/grovesystems" target="_blank" rel="noopener noreferrer" style={{ background: '#1877f3', color: 'white', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className="fab fa-facebook"></i>
                   </a>
-                  <a href="https://twitter.com/grovesystems" target="_blank" rel="noopener noreferrer" className="text-primary fs-5">
+                  <a href="https://twitter.com/grovesystems" target="_blank" rel="noopener noreferrer" style={{ background: '#1da1f2', color: 'white', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className="fab fa-twitter"></i>
                   </a>
-                  <a href="https://linkedin.com/company/grovesystems" target="_blank" rel="noopener noreferrer" className="text-primary fs-5">
+                  <a href="https://linkedin.com/company/grovesystems" target="_blank" rel="noopener noreferrer" style={{ background: '#0077b5', color: 'white', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className="fab fa-linkedin"></i>
                   </a>
-                  <a href="https://instagram.com/grovesystems" target="_blank" rel="noopener noreferrer" className="text-primary fs-5">
+                  <a href="https://instagram.com/grovesystems" target="_blank" rel="noopener noreferrer" style={{ background: 'radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%)', color: 'white', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className="fab fa-instagram"></i>
                   </a>
                 </div>

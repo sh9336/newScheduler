@@ -11,6 +11,7 @@ const API_BASE_URL = process.env.NODE_ENV === 'development'
 const RestoreSchedulesModal = ({ show, onHide, onSuccess }) => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const handleFileChange = (e) => {
@@ -21,13 +22,39 @@ const RestoreSchedulesModal = ({ show, onHide, onSuccess }) => {
     }
   };
 
-  const handleUpload = async () => {
+  const validateFile = (file) => {
     if (!file) {
-      setError('Please select a file to upload');
-      return;
+      throw new Error('Please select a file to upload');
     }
 
+    // Check file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      throw new Error('Only CSV files are allowed');
+    }
+
+    // Check file name
+    if (file.name !== 'SchedulesBackup.csv') {
+      throw new Error('File name must be SchedulesBackup.csv');
+    }
+
+    // Check file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      throw new Error('File size must be less than 5MB');
+    }
+
+    return true;
+  };
+
+  const handleUpload = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
     try {
+      // Validate the file
+      validateFile(file);
+      
+      setIsSubmitting(true);
       setIsUploading(true);
       setError(null);
 
@@ -64,6 +91,7 @@ const RestoreSchedulesModal = ({ show, onHide, onSuccess }) => {
       setError(error.message || 'Error restoring schedules');
     } finally {
       setIsUploading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -113,10 +141,10 @@ const RestoreSchedulesModal = ({ show, onHide, onSuccess }) => {
         )}
       </Modal.Body>
       <Modal.Footer className="border-top-0 px-3 pb-3 pt-0" style={{ justifyContent: 'center', gap: 12 }}>
-        <Button variant="light" onClick={onHide} disabled={isUploading} className="rounded-2 px-3" size="sm">
+        <Button variant="light" onClick={onHide} disabled={isUploading || isSubmitting} className="rounded-2 px-3" size="sm">
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleUpload} disabled={!file || isUploading} className="rounded-2 px-3 ms-2 d-flex align-items-center justify-content-center" size="sm">
+        <Button variant="primary" onClick={handleUpload} disabled={!file || isUploading || isSubmitting} className="rounded-2 px-3 ms-2 d-flex align-items-center justify-content-center" size="sm">
           <i className="fas fa-upload me-2"></i> {isUploading ? 'Uploading...' : 'Upload'}
         </Button>
       </Modal.Footer>
