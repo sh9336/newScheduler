@@ -10,6 +10,7 @@ import styles from '../../styles/ScheduleModals.module.css';
     : '';
 
 const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, scheduleActions, editData }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     Id: '',
     Name: '',
@@ -156,14 +157,79 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
     return cronExp;
   };
 
+  const validateRequestPayload = (data) => {
+    // Basic validation for required fields
+    const requiredFields = ['Name', 'Action', 'AssetId', 'timeOfDay'];
+    if (editData) {
+      requiredFields.push('Id');
+    }
+
+    for (const field of requiredFields) {
+      if (!data[field] || typeof data[field] !== 'string' || data[field].trim() === '') {
+        throw new Error(`Invalid or missing ${field}`);
+      }
+    }
+
+    // Validate schedule type
+    if (!['Daily', 'Weekly', 'Monthly', 'Annual'].includes(data.scheduleType)) {
+      throw new Error('Invalid schedule type');
+    }
+
+    // Validate time format
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+    if (!timeRegex.test(data.timeOfDay)) {
+      throw new Error('Invalid time format');
+    }
+
+    // Validate duration if provided
+    if (data.DurationInSec) {
+      const duration = parseInt(data.DurationInSec);
+      if (isNaN(duration) || duration < 0) {
+        throw new Error('Invalid duration');
+      }
+    }
+
+    // Schedule-specific validations
+    switch (data.scheduleType) {
+      case 'Weekly':
+        const validWeekDays = ['*', '1,2,3,4,5', '6,0', '0', '1', '2', '3', '4', '5', '6'];
+        if (!validWeekDays.includes(data.weeklyDay)) {
+          throw new Error('Invalid week day selection');
+        }
+        break;
+      case 'Monthly':
+      case 'Annual':
+        const day = data.monthlyDay;
+        if (day !== 'L' && (isNaN(parseInt(day)) || parseInt(day) < 1 || parseInt(day) > 31)) {
+          throw new Error('Invalid day of month');
+        }
+        if (data.scheduleType === 'Annual') {
+          const month = parseInt(data.annualMonth);
+          if (isNaN(month) || month < 1 || month > 12) {
+            throw new Error('Invalid month');
+          }
+        }
+        break;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!formData.Name || !formData.Action || !formData.AssetId || !formData.timeOfDay) {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
+    try {
+      // Validate the request payload
+      validateRequestPayload(formData);
+    } catch (error) {
       if (onNotification) {
-        onNotification('Please fill all required fields', 'warning');
+        onNotification(error.message, 'warning');
       }
       return;
     }
 
+    setIsSubmitting(true);
     const maxRetries = 3;
     let retryCount = 0;
 
@@ -191,7 +257,6 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
               method: 'POST',
               body: formDataToSend,
               credentials: 'include',
-              
             }
           );
 
@@ -231,6 +296,7 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
         // Call parent handlers
         if (onCreate) onCreate(result);
         if (onNotification) onNotification(`Schedule ${editData ? 'updated' : 'created'} successfully!`, 'success');
+        setIsSubmitting(false);
         onHide();
         return; // Success, exit the function
 
@@ -251,6 +317,7 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
 
         retryCount++;
         if (retryCount === maxRetries) {
+          setIsSubmitting(false);
           if (onNotification) {
             onNotification(`Failed to ${editData ? 'update' : 'create'} schedule after ${maxRetries} attempts. Please try again later.`, 'error');
           }
@@ -331,15 +398,15 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
                 className={styles.formSelect}
               >
                 <option value="*">Everyday</option>
-                <option value="2,3,4,5,6">Weekdays (Mon-Fri)</option>
-                <option value="1,7">Weekends (Sat-Sun)</option>
-                <option value="2">Monday</option>
-                <option value="3">Tuesday</option>
-                <option value="4">Wednesday</option>
-                <option value="5">Thursday</option>
-                <option value="6">Friday</option>
-                <option value="7">Saturday</option>
-                <option value="1">Sunday</option>
+                <option value="1,2,3,4,5">Weekdays (Mon-Fri)</option>
+                <option value="6,0">Weekends (Sat-Sun)</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
               </select>
             </div>
           )}
@@ -453,8 +520,15 @@ const NewScheduleModal = ({ show, onHide, onCreate, onNotification, assets, sche
         <button className={styles.buttonSecondary} onClick={onHide}>
           Cancel
         </button>
-        <button className={styles.buttonPrimary} onClick={handleSubmit}>
-          {editData ? 'Update Schedule' : 'Create Schedule'}
+        <button 
+          className={styles.buttonPrimary} 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting 
+            ? 'Processing...' 
+            : (editData ? 'Update Schedule' : 'Create Schedule')
+          }
         </button>
       </Modal.Footer>
     </Modal>

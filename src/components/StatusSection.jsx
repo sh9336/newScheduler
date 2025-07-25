@@ -68,14 +68,17 @@ export default function StatusSection() {
   useEffect(() => {
     const loadStatus = async () => {
       try {
-          const response = await fetch(`${API_BASE_URL}/initWithTime`, {
-            method: 'GET',
-            credentials: 'include', // Send cookies
-          });
+        const response = await fetch(`${API_BASE_URL}/initWithTime`, {
+          method: 'GET',
+          credentials: 'include', // Send cookies
+        });
         if (!response.ok) {
-          if (response.status === 401) {
+          if (response.status === 401 || response.status === 403) {
             setSchedulerStatus('not-authenticated');
-            throw new Error('Not authenticated');
+            showNotification('No valid session or session expired. Please login again.', 'warning');
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = '/static/login.html';
+            return;
           }
           throw new Error('Failed to fetch status');
         }
@@ -420,8 +423,8 @@ export default function StatusSection() {
 
   if (loading) {
     return (
-      <div className="container-fluid py-4">
-        <div className="text-center py-5">
+      <div className="d-flex flex-column" style={{ minHeight: 'calc(100vh - 60px)', margin: '24px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <div className="text-center py-5 flex-grow-1 d-flex flex-column align-items-center justify-content-center">
           <div className="spinner-border text-primary mb-3" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
@@ -466,7 +469,7 @@ export default function StatusSection() {
   };
 
   return (
-    <div className={`${styles.statusContainer} py-4 d-flex flex-column`} style={{ minHeight: 'calc(100vh - 60px)' }}>
+    <div className={`${styles.statusContainer} py-4 d-flex flex-column`} style={{ minHeight: 'calc(100vh - 60px)', margin: '24px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
       <FloatingNotification 
         notifications={notifications}
         onDismiss={dismissNotification}
@@ -529,7 +532,7 @@ export default function StatusSection() {
         </div>
       </div>
 
-      <div className="row flex-grow-1">
+      <div className="row flex-grow-1 mb-4">
         {renderScheduleSection(
           Object.values(statusData.runningActionSchedules), 
           'executing', 

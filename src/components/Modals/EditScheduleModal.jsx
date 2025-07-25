@@ -11,6 +11,7 @@ import styles from '../../styles/ScheduleModals.module.css';
     : '';
 
 const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, scheduleActions, schedule }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     Id: '',
     Name: '',
@@ -101,39 +102,111 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
     }
   };
 
-  const generateCronExpression = () => {
-    const [hours, minutes] = formData.timeOfDay.split(':');
-    let cronExp = '';
+  // const generateCronExpression = () => {
+  //   const [hours, minutes] = formData.timeOfDay.split(':');
+  //   let cronExp = '';
 
-    switch (formData.scheduleType) {
-      case 'Daily':
-        cronExp = `00 ${minutes} ${hours} * * *`;
-        break;
-      case 'Weekly':
-        cronExp = `00 ${minutes} ${hours} * * ${formData.weeklyDay}`;
-        break;
-      case 'Monthly':
-        const monthDay = formData.monthlyDay === 'L' ? 'L' : parseInt(formData.monthlyDay);
-        cronExp = `00 ${minutes} ${hours} ${monthDay} * *`;
-        break;
-      case 'Annual':
-        const day = parseInt(formData.monthlyDay);
-        cronExp = `00 ${minutes} ${hours} ${day} ${formData.annualMonth} *`;
-        break;
-      default:
-        cronExp = `00 ${minutes} ${hours} * * *`;
-    }
-    console.log('Generated cron expression:', cronExp);
-    return cronExp;
-  };
+  //   switch (formData.scheduleType) {
+  //     case 'Daily':
+  //       cronExp = `00 ${minutes} ${hours} * * *`;
+  //       break;
+  //     case 'Weekly':
+  //       cronExp = `00 ${minutes} ${hours} * * ${formData.weeklyDay}`;
+  //       break;
+  //     case 'Monthly':
+  //       const monthDay = formData.monthlyDay === 'L' ? 'L' : parseInt(formData.monthlyDay);
+  //       cronExp = `00 ${minutes} ${hours} ${monthDay} * *`;
+  //       break;
+  //     case 'Annual':
+  //       const day = parseInt(formData.monthlyDay);
+  //       cronExp = `00 ${minutes} ${hours} ${day} ${formData.annualMonth} *`;
+  //       break;
+  //     default:
+  //       cronExp = `00 ${minutes} ${hours} * * *`;
+  //   }
+  //   console.log('Generated cron expression:', cronExp);
+  //   return cronExp;
+  // };
+
+  const generateCronExpression = () => {
+  const [hours, minutes, seconds] = formData.timeOfDay.split(':');
+  let cronExp = '';
+
+  // Debug logging
+  console.log('=== CRON DEBUG ===');
+  console.log('Schedule Type:', formData.scheduleType);
+  console.log('Time of Day:', formData.timeOfDay);
+  console.log('Parsed time:', { hours, minutes, seconds });
+  
+  if (formData.scheduleType === 'Annual') {
+    console.log('Monthly Day (raw):', formData.monthlyDay);
+    console.log('Annual Month (raw):', formData.annualMonth);
+    console.log('Monthly Day (parsed):', formData.monthlyDay === 'L' ? 'L' : parseInt(formData.monthlyDay));
+    console.log('Annual Month (parsed):', parseInt(formData.annualMonth));
+  }
+
+  switch (formData.scheduleType) {
+    case 'Daily':
+      cronExp = `${seconds || '00'} ${minutes} ${hours} * * * `;
+      break;
+    case 'Weekly':
+      cronExp = `${seconds || '00'} ${minutes} ${hours} * * ${formData.weeklyDay} `;
+      break;
+    case 'Monthly':
+      const monthDay = formData.monthlyDay === 'L' ? 'L' : parseInt(formData.monthlyDay);
+      cronExp = `${seconds || '00'} ${minutes} ${hours} ${monthDay} * * `;
+      break;
+    case 'Annual':
+      // Add extra validation for annual
+      const day = formData.monthlyDay === 'L' ? 'L' : parseInt(formData.monthlyDay);
+      const month = parseInt(formData.annualMonth);
+      
+      // Validate parsed values
+      if (day !== 'L' && (isNaN(day) || day < 1 || day > 31)) {
+        console.error('Invalid day value:', day);
+        throw new Error(`Invalid day value: ${day}`);
+      }
+      
+      if (isNaN(month) || month < 1 || month > 12) {
+        console.error('Invalid month value:', month);
+        throw new Error(`Invalid month value: ${month}`);
+      }
+      
+      // Use 1-based month (1-12) as expected by the API
+      cronExp = `${seconds || '00'} ${minutes} ${hours} ${day} ${month} * `;
+      break;
+    default:
+      cronExp = `${seconds || '00'} ${minutes} ${hours} * * * `;
+  }
+  
+  console.log('Generated cron expression:', cronExp);
+  console.log('Cron expression length:', cronExp.length);
+  console.log('Cron expression fields:', cronExp.split(' '));
+  console.log('=== END DEBUG ===');
+  
+  return cronExp;
+};
 
   const handleSubmit = async () => {
-    if (!formData.Name || !formData.Action || !formData.AssetId || !formData.timeOfDay) {
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return;
+    }
+
+    // Extra safety: check all required fields for validity
+    if (!formData.Name || typeof formData.Name !== 'string' || formData.Name.trim() === '' ||
+        !formData.Action || typeof formData.Action !== 'string' || formData.Action.trim() === '' ||
+        !formData.AssetId || typeof formData.AssetId !== 'string' || formData.AssetId.trim() === '' ||
+        !formData.timeOfDay || typeof formData.timeOfDay !== 'string' || formData.timeOfDay.trim() === '' ||
+        !formData.Id || typeof formData.Id !== 'string' || formData.Id.trim() === ''
+    ) {
       if (onNotification) {
-        onNotification('Please fill all required fields', 'warning');
+        onNotification('Invalid or missing required fields. Please check your input.', 'warning');
       }
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const cronSpecFull = generateCronExpression();
@@ -150,7 +223,9 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
        const response = await fetch(`${API_BASE_URL}/updateSchedule`, {
         method: 'POST',
         body: formDataToSend,
-        credentials: 'include', // Send cookies
+        credentials: 'include',
+        
+         // Send cookies
       });
 
       
@@ -171,12 +246,20 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
       if (onNotification) {
         onNotification(error.message, 'error');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton className={styles.modalHeader}>
+    <Modal 
+      show={show} 
+      onHide={onHide} 
+      centered
+      backdrop={isSubmitting ? 'static' : true}
+      keyboard={!isSubmitting}
+    >
+      <Modal.Header closeButton={!isSubmitting} className={styles.modalHeader}>
         <Modal.Title className={styles.modalTitle}>Edit Schedule</Modal.Title>
       </Modal.Header>
       <Modal.Body className={styles.modalBody}>
@@ -238,7 +321,7 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
                 className={styles.formSelect}
               >
                 <option value="*">Everyday</option>
-                <option value="2,3,4,5,6">Weekdays (Mon-Fri)</option>
+                {/* <option value="2,3,4,5,6">Weekdays (Mon-Fri)</option>
                 <option value="1,7">Weekends (Sat-Sun)</option>
                 <option value="2">Monday</option>
                 <option value="3">Tuesday</option>
@@ -246,7 +329,18 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
                 <option value="5">Thursday</option>
                 <option value="6">Friday</option>
                 <option value="7">Saturday</option>
-                <option value="1">Sunday</option>
+                <option value="1">Sunday</option> */}
+
+                <option value="1,2,3,4,5">Weekdays (Mon-Fri)</option>
+                <option value="0,6">Weekends (Sat-Sun)</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+
               </select>
             </div>
           )}
@@ -356,11 +450,26 @@ const EditScheduleModal = ({ show, onHide, onUpdate, onNotification, assets, sch
         </Form>
       </Modal.Body>
       <Modal.Footer className={styles.modalFooter}>
-        <button className={styles.buttonSecondary} onClick={onHide}>
+        <button 
+          className={styles.buttonSecondary} 
+          onClick={onHide}
+          disabled={isSubmitting}
+        >
           Cancel
         </button>
-        <button className={styles.buttonPrimary} onClick={handleSubmit}>
-          Update Schedule
+        <button 
+          className={styles.buttonPrimary} 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Updating...
+            </>
+          ) : (
+            'Update Schedule'
+          )}
         </button>
       </Modal.Footer>
     </Modal>

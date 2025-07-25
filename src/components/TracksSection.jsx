@@ -21,6 +21,7 @@ const [assets, setAssets] = useState([]);
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [selectedAssetName, setSelectedAssetName] = useState('');
   const [playingAssets, setPlayingAssets] = useState({});
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchAssets = async () => {
     try {
@@ -56,6 +57,18 @@ const [assets, setAssets] = useState([]);
   };
 
   const confirmDelete = async () => {
+    // Extra safety: validate selectedAssetId before sending request
+    if (!selectedAssetId || typeof selectedAssetId !== 'string' || selectedAssetId.trim() === '') {
+      Notification({ message: 'Invalid track selected for deletion.', type: 'danger' });
+      setShowDeleteModal(false);
+      setSelectedAssetId(null);
+      setSelectedAssetName('');
+      return;
+    }
+    
+    if (isDeleting) return; // Prevent multiple delete requests
+    
+    setIsDeleting(true);
     try {
       const formData = new FormData();
       formData.append('Id', selectedAssetId);
@@ -84,6 +97,8 @@ const [assets, setAssets] = useState([]);
     } catch (error) {
       console.error('Error deleting track:', error);
       Notification({ message: error.message, type: 'danger' });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -350,9 +365,10 @@ const [assets, setAssets] = useState([]);
       />
       <DeleteConfirmationModal
         show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
+        onHide={() => !isDeleting && setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         trackName={selectedAssetName}
+        isDeleting={isDeleting}
       />
 
       <style jsx>{`

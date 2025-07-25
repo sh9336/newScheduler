@@ -24,12 +24,12 @@ export async function DELETE(req, { params }) {
 }
 
 async function handleProxy(req, pathSegments) {
-  const targetURL = `http://192.168.1.127:8080/${pathSegments.join('/')}`;
+  const targetURL = `http://192.168.1.4:8080/${pathSegments.join('/')}`;
 
   try {
     const method = req.method;
     const headers = new Headers(req.headers);
-    headers.set('Host', '192.168.1.127:8080');
+    headers.set('Host', '192.168.1.4:8080');
 
     if (req.headers.get('cookie')) {
       headers.set('cookie', req.headers.get('cookie'));

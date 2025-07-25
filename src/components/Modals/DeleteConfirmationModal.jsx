@@ -2,10 +2,10 @@
 
 import { Modal, Button } from 'react-bootstrap';
 
-export default function DeleteConfirmationModal({ show, onHide, onConfirm, trackName }) {
+export default function DeleteConfirmationModal({ show, onHide, onConfirm, trackName, isDeleting }) {
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton>
+    <Modal show={show} onHide={onHide} centered backdrop={isDeleting ? 'static' : true} keyboard={!isDeleting}>
+      <Modal.Header closeButton={!isDeleting}>
         <Modal.Title>Delete Track</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -23,11 +23,22 @@ export default function DeleteConfirmationModal({ show, onHide, onConfirm, track
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="secondary" onClick={onHide} disabled={isDeleting}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm}>
-          Delete
+        <Button 
+          variant="danger" 
+          onClick={onConfirm} 
+          disabled={isDeleting}
+        >
+          {isDeleting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Deleting...
+            </>
+          ) : (
+            'Delete'
+          )}
         </Button>
       </Modal.Footer>
     </Modal>
