@@ -17,8 +17,8 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
 
-  const ALLOWED_TYPES = ['audio/mpeg', 'video/mp4'];
-  const ALLOWED_EXTENSIONS = ['.mp3', '.mp4'];
+  const ALLOWED_TYPES = ['audio/mpeg', 'video/mp4', 'audio/x-scpls'];
+  const ALLOWED_EXTENSIONS = ['.mp3', '.mp4', '.pls'];
   
   // Function to validate file name
   const isValidFileName = (fileName) => {
@@ -79,10 +79,10 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
           reason: fileNameValidation.reason,
           suggestion: suggestValidFileName(file.name)
         });
-      } else if (!ALLOWED_TYPES.includes(file.type)) {
+      } else if (!ALLOWED_TYPES.includes(file.type) && file.name.split('.').pop().toLowerCase() !== 'pls') {
         invalidFiles.push({
           name: file.name,
-          reason: 'Invalid file type. Only MP3 and MP4 files are allowed.',
+          reason: 'Invalid file type. Only MP3, MP4, and Playlist(.pls) files are allowed.',
           suggestion: null
         });
       } else {
@@ -321,7 +321,7 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
         <div className="alert alert-info py-2 px-3 mb-3">
           <h6 className="fw-bold mb-1 fs-6">File Requirements:</h6>
           <ul className="mb-0 ps-3 small">
-            <li>Only MP3(.mp3) and MP4(.mp4) files are supported</li>
+            <li>Only MP3(.mp3), MP4(.mp4) & Playlist(.pls) files are supported</li>
             <li>File names must not contain spaces or special characters</li>
             <li>Use underscores (_) or dashes (-) instead of spaces</li>
             <li>Example: my_song.mp3, track-name.mp4</li>
@@ -361,7 +361,7 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
             className="d-none"
             onChange={handleFileSelect}
             multiple
-            accept=".mp3,.mp4"
+            accept=".mp3,.mp4,.pls"
           />
           <div className="py-3">
             <div className="upload-icon-wrapper mb-2">
@@ -373,7 +373,7 @@ export default function NewTrackModal({ show, onHide, onCreate }) {
               or <span className="text-primary text-decoration-underline">browse</span> to choose files
             </p>
             <small className="d-block text-muted mt-1 small">
-              Supported formats: MP3, MP4
+              Supported formats: MP3, MP4 & Playlist(.pls)
             </small>
           </div>
         </div>

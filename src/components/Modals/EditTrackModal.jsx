@@ -84,7 +84,7 @@ export default function EditTrackModal({ show, onHide, assetId, onUpdate }) {
         reason: 'File name contains special characters. Only underscores (_) and dashes (-) are allowed.'
       };
     }
-    const ALLOWED_EXTENSIONS = ['.mp3', '.mp4'];
+    const ALLOWED_EXTENSIONS = ['.mp3', '.mp4', '.pls'];
     const extension = '.' + fileName.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(extension)) {
       return {
